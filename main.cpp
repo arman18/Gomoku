@@ -5,6 +5,7 @@
 using namespace  std;
 int state[10][10];
 const int maxDepth = 6;
+bool logged = false;
 QSet<QPair<int,int>> insertAdj(QSet<QPair<int,int>> set,QPair<int,int> point){
     set.remove(point);
     for(int i = point.first-1;i<=point.first+1;i++)
@@ -82,73 +83,57 @@ int fiveInRow(const int &i,const int &j){
     return 0;
 }
 
-double Min(double pre,QSet<QPair<int,int>> options,int depth);
+QPair<double,QPair<int,int>> Min(double pre,QSet<QPair<int,int>> options,int depth);
 
-QPair<double,QPair<int,int>> Max(int pre,QSet<QPair<int,int>> options,int depth){
+QPair<double,QPair<int,int>> Max(double pre,QSet<QPair<int,int>> options,int depth){ /// never call with empty options from main
 
-    if(options.isEmpty()) return QPair<int,QPair<int,int>>(0,QPair<int,int>()); //draw
-    QPair<int,int> eachOptn;
+    if(options.isEmpty()) return QPair<double,QPair<int,int>>(0,QPair<int,int>()); //draw
     double tempMax = -9999999;
-    QPair<int,int> temPair;
-    foreach (eachOptn, options) {
-        if(depth==1) qDebug()<<eachOptn<<" ";
-        state[eachOptn.first][eachOptn.second] = 1;
-        if(fiveInRow(eachOptn.first,eachOptn.second)){
-            state[eachOptn.first][eachOptn.second] = 0;
-            temPair = eachOptn;
-            tempMax =1;
-            if(depth==1) qDebug()<<tempMax<<endl;
-            break;
+    QPair<int,int> tempPoint;
+    QPair<double,QPair<int,int>> result;
+    double maxUtil = 1.0/depth;
+    foreach (auto option, options) {
+        if(depth==2 && logged) qDebug()<<option.first+1<<" "<<option.second+1<<endl;
+        state[option.first][option.second] = 1;
+        if(fiveInRow(option.first,option.second))
+            result = QPair<double,QPair<int,int>>(maxUtil,QPair<int,int>());
+        else{
+            if(depth==maxDepth) result = QPair<double,QPair<int,int>>(0,QPair<int,int>());
+            else result =  Min(tempMax,insertAdj(options,option),depth+1);
         }
-        double result;
-        result = Min(tempMax,insertAdj(options,eachOptn),depth+1); // check
-        if(tempMax<result){ // never do it equal
-            tempMax = result;
-            temPair = eachOptn;
+        state[option.first][option.second] = 0;
+        if(tempMax<result.first) {
+            tempMax = result.first;
+            tempPoint = option;
         }
-
-        if(depth==1) qDebug()<<tempMax<<endl;
-        state[eachOptn.first][eachOptn.second] = 0;
-        if(tempMax>=pre || tempMax==1) break;
+        if(depth==2 && logged) qDebug()<<"tempMIn "<<tempMax<<" result "<<result.first<<endl;
+        if(tempMax>=pre || tempMax == maxUtil) break;
     }
-    return QPair<int,QPair<int,int>>(tempMax,temPair);
+
+    return QPair<double,QPair<int,int>>(tempMax,tempPoint);
 }
 
-double Min(double pre,QSet<QPair<int,int>> options,int depth){
-    if(options.isEmpty()) return 0; //draw
-    QPair<int,int> eachOptn;
-    int tempMIn = 9999999,density = 0;
-    foreach (eachOptn, options) {
-        if(depth==2) qDebug()<<"    "<<eachOptn<<" ";
-        state[eachOptn.first][eachOptn.second] = -1;
-        if(fiveInRow(eachOptn.first,eachOptn.second)){
-            state[eachOptn.first][eachOptn.second] = 0;
-            if(depth==2) qDebug()<<"    "<<-2<<endl;
-            if(depth==2 && pre<0) return -2;
-
-            return -1; // as we cant more minimize
+QPair<double,QPair<int,int>> Min(double pre,QSet<QPair<int,int>> options,int depth){
+    if(options.isEmpty()) return QPair<double,QPair<int,int>>(0,QPair<int,int>()); //draw
+    double tempMIn = 9999999;
+    QPair<double,QPair<int,int>> result;
+    double maxUtil = -1.0/depth;
+    foreach (auto option, options) {
+        if(depth==2 && logged) qDebug()<<"     "<<option.first+1<<" "<<option.second+1<<endl;
+        state[option.first][option.second] = -1;
+        if(fiveInRow(option.first,option.second))
+            result = QPair<double,QPair<int,int>>(maxUtil,QPair<int,int>());
+        else{
+            if(depth==maxDepth) result = QPair<double,QPair<int,int>>(0,QPair<int,int>());
+            else result =  Max(tempMIn,insertAdj(options,option),depth+1);
         }
-        if(depth==maxDepth) {
-            state[eachOptn.first][eachOptn.second] = 0;
-            continue;
-        }
-        // or return minimum of all other options
-        QPair<int,QPair<int,int>> result;
-        result = Max(tempMIn,insertAdj(options,eachOptn),depth+1);  // check this
-        tempMIn = min(tempMIn,result.first);
-        state[eachOptn.first][eachOptn.second] = 0;
-        if(depth==2) qDebug()<<"f    "<<tempMIn<<endl;
-        if(depth==2 && pre<0 && result.first==-1) {
-            density-=1;
-            continue;
-        }
-        if(tempMIn<=pre) break;
-
+        state[option.first][option.second] = 0;
+        if(tempMIn>result.first) tempMIn = result.first;
+        if(depth==2 && logged) qDebug()<<"       tempMIn "<<tempMIn<<" result "<<result.first<<endl;
+        if(tempMIn<=pre || tempMIn == maxUtil) break;
     }
-    if(depth==2 && pre<0) return (density+0.0)/options.count();
-    if(depth==maxDepth) return 0;
-    return tempMIn;
 
+    return QPair<double,QPair<int,int>>(tempMIn,QPair<int,int>());
 }
 
 
@@ -158,46 +143,104 @@ int main()
     int i,j;
     bool first = true;
     QPair<double,QPair<int,int>> result;
-    while(true){
-        cout<<"man: ";
-        cin>>i>>j;
-        i--;j--;
-        state[i][j] = -1;
-        if(fiveInRow(i,j)) {
-            cout<<"You win"<<endl;
-            return -1;
+    while (true) {
+        while(true){
+            if(first){
+                    i = 4;
+                    j = 4;
+                    first = false;
+                }
+            else {
+                result  = Max(9999999,options,1);
+
+                i = result.second.first;
+                j = result.second.second;
+            }
+
+            qDebug()<<"computer: "<<i+1<<" "<<j+1;//<<"utility: "<<result.first<<endl;
+            state[i][j] = 1;
+            if(fiveInRow(i,j)) {
+                cout<<"You loosed"<<endl;
+                break;
+            }
+            options = insertAdj(options,QPair<int,int>(i,j));
+            if(options.isEmpty()) {
+                if(fiveInRow(i,j)) {
+                    cout<<"draw"<<endl;
+                    break;
+                }
+            }
+            cout<<"man: ";
+            cin>>i>>j;
+            i--;j--;
+            state[i][j] = -1;
+            if(fiveInRow(i,j)) {
+                cout<<"You win"<<endl;
+                break;
+            }
+            options = insertAdj(options,QPair<int,int>(i,j));
+            if(options.isEmpty()) {
+                if(fiveInRow(i,j)) {
+                    cout<<"draw"<<endl;
+                    break;
+                }
+            }
         }
-        options = insertAdj(options,QPair<int,int>(i,j));
-        if(first){
-            if(!state[4][4]){
-                i=4;j=4;
+        first = true;
+        options.clear();
+        for(int ii = 0;ii<10;ii++)
+            for(int jj=0;jj<10;jj++) state[ii][jj] = 0;
+        cout<<"\n----------------play again-------------------"<<endl;
+        getchar();
+        while(true){
+            cout<<"man: ";
+            cin>>i>>j;
+            i--;j--;
+            state[i][j] = -1;
+            if(fiveInRow(i,j)) {
+                cout<<"You win"<<endl;
+                break;
+            }
+            options = insertAdj(options,QPair<int,int>(i,j));
+            if(options.isEmpty()) {
+                if(fiveInRow(i,j)) {
+                    cout<<"draw"<<endl;
+                    break;
+                }
+            }
+            if(first){
+                if(!state[4][4]){
+                    i=4;j=4;
+                }
+                else {
+                    i = 5;
+                    j = 5;
+                }
+                first = false;
             }
             else {
-                i = 5;
-                j = 5;
+                result  = Max(9999999,options,1);
+
+                i = result.second.first;
+                j = result.second.second;
             }
-            first = false;
-        }
-        else {
-            result  = Max(99999,options,1);
 
-            i = result.second.first;
-            j = result.second.second;
-        }
-
-        qDebug()<<"computer: "<<i+1<<" "<<j+1<<"utility: "<<result.first<<endl;
-        state[i][j] = 1;
-        if(fiveInRow(i,j)) {
-            cout<<"You loosed"<<endl;
-            return 1;
-        }
-        options = insertAdj(options,QPair<int,int>(i,j));
-        if(options.isEmpty()) {
+            qDebug()<<"computer: "<<i+1<<" "<<j+1;//<<"utility: "<<result.first<<endl;
+            state[i][j] = 1;
             if(fiveInRow(i,j)) {
-                cout<<"draw"<<endl;
-                return 1;
+                cout<<"You loosed"<<endl;
+                break;
+            }
+            options = insertAdj(options,QPair<int,int>(i,j));
+            if(options.isEmpty()) {
+                if(fiveInRow(i,j)) {
+                    cout<<"draw"<<endl;
+                    break;
+                }
             }
         }
+        cout<<"\n----------------play again-------------------"<<endl;
+        getchar();
     }
 
 
