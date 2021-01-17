@@ -82,56 +82,50 @@ int fiveInRow(const int &i,const int &j){
     return 0;
 }
 
-bool criticalPt(QPair<int,int> point){
-    int cnt = 0;
-    for(int i = point.first-1;i<=point.first+1;i++)
-    for(int j=point.second-1;j<=point.second+1;j++){
-        if(i<0||j<0||i>=10||j>=10) continue;
-        if(state[i][j]==-1) cnt++;
-    }
-    if(cnt>3) return true;
-    return false;
+double Min(double pre,QSet<QPair<int,int>> options,int depth);
 
-}
-int Min(int pre,QSet<QPair<int,int>> options,int depth);
-
-QPair<int,QPair<int,int>> Max(int pre,QSet<QPair<int,int>> options,int depth){
+QPair<double,QPair<int,int>> Max(int pre,QSet<QPair<int,int>> options,int depth){
 
     if(options.isEmpty()) return QPair<int,QPair<int,int>>(0,QPair<int,int>()); //draw
-    bool isNegative = false;
     QPair<int,int> eachOptn;
-    int tempMax = -9999999;
+    double tempMax = -9999999;
     QPair<int,int> temPair;
     foreach (eachOptn, options) {
+        if(depth==1) qDebug()<<eachOptn<<" ";
         state[eachOptn.first][eachOptn.second] = 1;
         if(fiveInRow(eachOptn.first,eachOptn.second)){
             state[eachOptn.first][eachOptn.second] = 0;
-            return QPair<int,QPair<int,int>> (1,eachOptn);
+            temPair = eachOptn;
+            tempMax =1;
+            if(depth==1) qDebug()<<tempMax<<endl;
+            break;
         }
-        int result;
+        double result;
         result = Min(tempMax,insertAdj(options,eachOptn),depth+1); // check
-        if(result==-1) isNegative = true;
-        //if(depth==1) qDebug()<<eachOptn.first+1<<","<<eachOptn.second+1<<" "<<result<<endl;
-        if(tempMax<result){
+        if(tempMax<result){ // never do it equal
             tempMax = result;
             temPair = eachOptn;
         }
+
+        if(depth==1) qDebug()<<tempMax<<endl;
         state[eachOptn.first][eachOptn.second] = 0;
-        if(tempMax>=pre) break;
+        if(tempMax>=pre || tempMax==1) break;
     }
-    //if(depth==1 && !tempMax && isNegative) tempMax = 2; // to protect man from wining
     return QPair<int,QPair<int,int>>(tempMax,temPair);
 }
 
-int Min(int pre,QSet<QPair<int,int>> options,int depth){
-    //cout<<"Min:depth "<<depth<<" options "<<options.count()<<endl;
+double Min(double pre,QSet<QPair<int,int>> options,int depth){
     if(options.isEmpty()) return 0; //draw
     QPair<int,int> eachOptn;
-    int tempMIn = 9999999;
+    int tempMIn = 9999999,density = 0;
     foreach (eachOptn, options) {
+        if(depth==2) qDebug()<<"    "<<eachOptn<<" ";
         state[eachOptn.first][eachOptn.second] = -1;
         if(fiveInRow(eachOptn.first,eachOptn.second)){
             state[eachOptn.first][eachOptn.second] = 0;
+            if(depth==2) qDebug()<<"    "<<-2<<endl;
+            if(depth==2 && pre<0) return -2;
+
             return -1; // as we cant more minimize
         }
         if(depth==maxDepth) {
@@ -143,23 +137,28 @@ int Min(int pre,QSet<QPair<int,int>> options,int depth){
         result = Max(tempMIn,insertAdj(options,eachOptn),depth+1);  // check this
         tempMIn = min(tempMIn,result.first);
         state[eachOptn.first][eachOptn.second] = 0;
+        if(depth==2) qDebug()<<"f    "<<tempMIn<<endl;
+        if(depth==2 && pre<0 && result.first==-1) {
+            density-=1;
+            continue;
+        }
         if(tempMIn<=pre) break;
 
     }
+    if(depth==2 && pre<0) return (density+0.0)/options.count();
     if(depth==maxDepth) return 0;
     return tempMIn;
 
 }
 
 
-
 int main()
 {
     QSet<QPair<int,int>> options;
     int i,j;
-    QPair<int,QPair<int,int>> result;
+    bool first = true;
+    QPair<double,QPair<int,int>> result;
     while(true){
-        bool critical = false;
         cout<<"man: ";
         cin>>i>>j;
         i--;j--;
@@ -169,29 +168,24 @@ int main()
             return -1;
         }
         options = insertAdj(options,QPair<int,int>(i,j));
-        result  = Max(99999,options,1);
-//        if(!result.first){
-//            for(int ii = i-1;ii<=i+1;ii++)
-//            {
-//            for(int jj=j-1;jj<=j+1;jj++){
-//                    if(ii<0||jj<0||ii>=10||jj>=10) continue;
-//                    if(state[ii][jj]) continue;
-//                    critical = criticalPt(QPair<int,int>(ii,jj));
-//                    if(critical){
-//                        i = ii;
-//                        j = jj;
-//                        break;
-//                    }
-//                }
-//              if(critical) break;
-//            }
-//        }
-        //if(!critical){
+        if(first){
+            if(!state[4][4]){
+                i=4;j=4;
+            }
+            else {
+                i = 5;
+                j = 5;
+            }
+            first = false;
+        }
+        else {
+            result  = Max(99999,options,1);
+
             i = result.second.first;
             j = result.second.second;
-        //}
+        }
+
         qDebug()<<"computer: "<<i+1<<" "<<j+1<<"utility: "<<result.first<<endl;
-        //qDebug()<<"computer: "<<i+1<<" "<<j+1<<endl;
         state[i][j] = 1;
         if(fiveInRow(i,j)) {
             cout<<"You loosed"<<endl;
