@@ -18,11 +18,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     board.cpp \
     cell.cpp \
+    displayinfo.cpp \
     main.cpp
 
 HEADERS += \
     board.h \
-    cell.h
+    cell.h \
+    displayinfo.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
