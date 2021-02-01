@@ -19,12 +19,14 @@ SOURCES += \
     board.cpp \
     cell.cpp \
     displayinfo.cpp \
-    main.cpp
+    main.cpp \
+    utility.cpp
 
 HEADERS += \
     board.h \
     cell.h \
-    displayinfo.h
+    displayinfo.h \
+    utility.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

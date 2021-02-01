@@ -1,5 +1,6 @@
-#include "Tminmax.h"
+#include "board.h"
 #include "displayinfo.h"
+#include "utility.h"
 
 #include <QApplication>
 #include <QPoint>
@@ -9,7 +10,8 @@
 #include <QCoreApplication>
 using namespace  std;
 int state[10][10];
-const int maxDepth = 5;
+Utility utilObj;
+const int maxDepth = 4;
 
 bool logged = false;
 QSet<QPair<int,int>> insertAdj(QSet<QPair<int,int>> set,QPair<int,int> point){
@@ -105,60 +107,76 @@ int fiveInRow(const int &i,const int &j,QPoint &start,QPoint &end){
     return 0;
 }
 
-QPair<double,QPair<int,int>> Min(double pre,QSet<QPair<int,int>> options,int depth);
+QPair<double,QPair<int,int>> Min(const double alpha,QSet<QPair<int,int>> options,int depth);
 
-QPair<double,QPair<int,int>> Max(double pre,QSet<QPair<int,int>> options,int depth){ /// never call with empty options from main
+QPair<double,QPair<int,int>> Max(const double beta,QSet<QPair<int,int>> options,int depth){ /// never call with empty options from main
+    //if(depth==1) qDebug()<<"////////////";
     QCoreApplication::processEvents();
     if(options.isEmpty()) return QPair<double,QPair<int,int>>(0,QPair<int,int>()); //draw
-    double tempMax = -9999999;
+    double alpha = -9999999999;
     QPoint start,end;
     QPair<int,int> tempPoint;
     QPair<double,QPair<int,int>> result;
-    double maxUtil = 1.0/depth;
+    double maxUtil = 200000000.0/depth;
     foreach (auto option, options) {
         if(depth==2 && logged) qDebug()<<option.first+1<<" "<<option.second+1<<endl;
         state[option.first][option.second] = 1;
         if(fiveInRow(option.first,option.second,start,end))
             result = QPair<double,QPair<int,int>>(maxUtil,QPair<int,int>());
         else{
-            if(depth==maxDepth) result = QPair<double,QPair<int,int>>(0,QPair<int,int>());
-            else result =  Min(tempMax,insertAdj(options,option),depth+1);
+            if(depth==maxDepth) {
+                //double res = utilObj.utility(state,option.first,option.second);
+                result = QPair<double,QPair<int,int>>(0/depth,QPair<int,int>());
+            }
+            else result =  Min(alpha,insertAdj(options,option),depth+1);
+            if(result.first==0 && depth==1){
+                double res = utilObj.utility(state,option.first,option.second);
+                result = QPair<double,QPair<int,int>>(res/maxDepth,QPair<int,int>());
+            }
         }
         state[option.first][option.second] = 0;
-        if(tempMax<result.first) {
-            tempMax = result.first;
+        //if(depth==1) qDebug()<<result.first<<option;
+        if(alpha<result.first) {
+
+            alpha = result.first;
             tempPoint = option;
         }
-        if(depth==2 && logged) qDebug()<<"tempMIn "<<tempMax<<" result "<<result.first<<endl;
-        if(tempMax>=pre || tempMax == maxUtil) break;
+
+        if(alpha>=beta || alpha == maxUtil) break;
     }
 
-    return QPair<double,QPair<int,int>>(tempMax,tempPoint);
+    return QPair<double,QPair<int,int>>(alpha,tempPoint);
 }
 
-QPair<double,QPair<int,int>> Min(double pre,QSet<QPair<int,int>> options,int depth){
+QPair<double,QPair<int,int>> Min(const double alpha,QSet<QPair<int,int>> options,int depth){
     QCoreApplication::processEvents();
     if(options.isEmpty()) return QPair<double,QPair<int,int>>(0,QPair<int,int>()); //draw
-    double tempMIn = 9999999;
+    double beta = 9999999999;
     QPair<double,QPair<int,int>> result;
     QPoint start,end;
-    double maxUtil = -1.0/depth;
+    double maxUtil = -200000000.0/depth;
     foreach (auto option, options) {
-        if(depth==2 && logged) qDebug()<<"     "<<option.first+1<<" "<<option.second+1<<endl;
         state[option.first][option.second] = -1;
-        if(fiveInRow(option.first,option.second,start,end))
+        if(fiveInRow(option.first,option.second,start,end)){
             result = QPair<double,QPair<int,int>>(maxUtil,QPair<int,int>());
+        }
+
         else{
-            if(depth==maxDepth) result = QPair<double,QPair<int,int>>(0,QPair<int,int>());
-            else result =  Max(tempMIn,insertAdj(options,option),depth+1);
+            if(depth==maxDepth) {
+//                if(board.info.restartBtnClick){
+
+//                }
+                //double res = utilObj.utility(state,option.first,option.second);
+                result = QPair<double,QPair<int,int>>(0/depth,QPair<int,int>());
+            }
+            else result =  Max(beta,insertAdj(options,option),depth+1);
         }
         state[option.first][option.second] = 0;
-        if(tempMIn>result.first) tempMIn = result.first;
-        if(depth==2 && logged) qDebug()<<"       tempMIn "<<tempMIn<<" result "<<result.first<<endl;
-        if(tempMIn<=pre || tempMIn == maxUtil) break;
+        if(beta>result.first) beta = result.first;
+        if(beta<=alpha || beta == maxUtil) break;
     }
 
-    return QPair<double,QPair<int,int>>(tempMIn,QPair<int,int>());
+    return QPair<double,QPair<int,int>>(beta,QPair<int,int>());
 }
 
 int playByMan(QSet<QPair<int,int>> &options,Board &board){
@@ -177,21 +195,22 @@ int playByMan(QSet<QPair<int,int>> &options,Board &board){
         state[i][j] = -1;
         if(fiveInRow(i,j,start,end)) {
             board.man_won(start,end);
-            //qDebug()<<"i,j"<<i<<","<<j<<"start "<<start<<"end "<<end;
             return board.info.getButtonClick();
         }
         options = insertAdj(options,QPair<int,int>(i,j));
         if(options.isEmpty()) {
+                board.info.draw();
                 return board.info.getButtonClick();
         }
 // computer turn-------------------------------
+
+        result  = Max(9999999999,options,1);
         if(board.info.restartBtnClick){
             board.info.restartBtnClick = 0;
             return 1;
         }
-        result  = Max(9999999,options,1);
         i = result.second.first; j = result.second.second;
-
+        //qDebug()<<result.first;
         board.setComputerImage(i,j);
         state[i][j] = 1;
         if(fiveInRow(i,j,start,end)) {
@@ -201,6 +220,7 @@ int playByMan(QSet<QPair<int,int>> &options,Board &board){
         }
         options = insertAdj(options,QPair<int,int>(i,j));
         if(options.isEmpty()) {
+                board.info.draw();
                 return board.info.getButtonClick();
         }
 

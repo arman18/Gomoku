@@ -4,5 +4,6 @@
         <file>computer_won.png</file>
         <file>man.png</file>
         <file>man_won.png</file>
+        <file>gomokiLogo.jpg</file>
     </qresource>
 </RCC>

@@ -17,6 +17,8 @@ void Board::initCells()
             connect(cells[i][j],SIGNAL(getPosition(QPoint)),this,SLOT(getPosition(QPoint)));
         }
     //info = new DisplayInfo();
+    imageLabel = new QLabel();
+    imageLabel->setPixmap(QPixmap::fromImage(QImage(":/images/gomokiLogo.jpg")));
 }
 
 void Board::creatLayout()
@@ -25,7 +27,9 @@ void Board::creatLayout()
     for(int i=0;i<10;i++)
         for(int j=0;j<10;j++)
             glay->addWidget(cells[i][j],i,j);
+    glay->addWidget(imageLabel,0,10,7,2);
     glay->addWidget(&info,3,10,8,2,Qt::AlignCenter);
+    setFixedSize(sizeHint());
 }
 
 void Board::resetCells()

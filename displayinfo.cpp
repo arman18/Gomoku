@@ -29,6 +29,15 @@ void DisplayInfo::computerWin()
     btnNext->setDisabled(false);
 }
 
+void DisplayInfo::draw()
+{
+    lblWinLabel->setText(drawMsg);
+    ckbxMan->setChecked(false);
+    ckbxComputer->setChecked(false);
+    btnReStart->setDisabled(false);
+    btnNext->setDisabled(false);
+}
+
 void DisplayInfo::manTurn()
 {
     ckbxMan->setChecked(true);
@@ -54,7 +63,8 @@ int DisplayInfo::getButtonClick()
 
 void DisplayInfo::initUi()
 {
-    lblWinLabel = new QLabel("");
+    lblWinLabel = new QLabel("Welcome");
+    lblWinLabel->setStyleSheet("QLabel {  color : red; font:15pt}");
     lblManScore = new QLabel("0");
     lblComputerScore = new QLabel("0");
     btnReStart = new QPushButton("Restart");
@@ -65,6 +75,7 @@ void DisplayInfo::initUi()
     ckbxMan = new QCheckBox("You");
     ckbxComputer = new QCheckBox("Computer");
     gridLay = new QGridLayout(this);
+
 }
 
 void DisplayInfo::createLayout()

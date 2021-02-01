@@ -16,6 +16,7 @@ private:
     QGridLayout *glay;
     void initCells();
     void creatLayout();
+    QLabel *imageLabel;
 
 public slots:
     void getPosition(QPoint position);

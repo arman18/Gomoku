@@ -14,6 +14,7 @@ public:
     explicit DisplayInfo(QWidget *parent = nullptr);
     void manWin();
     void computerWin();
+    void draw();
     void manTurn();
     void computerTurn();
     int getButtonClick();
@@ -22,7 +23,8 @@ signals:
 private:
     int nextBtnClick=0;
     const QString manWinMsg = "Congratulations...";
-    const QString manLoseMsg = "You Lost";
+    const QString manLoseMsg = "You Lose...";
+    const QString drawMsg = "Draw...";
     int winComputerCnt = 0;
     int winManCnt = 0;
     QLabel *lblWinLabel,*lblManScore,*lblComputerScore;
