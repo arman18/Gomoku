@@ -1,23 +1,17 @@
-#include "utility.h"
 #include<iostream>
 #include<bits/stdc++.h>
 
 using namespace std;
 
-Utility::Utility()
-{
-    //cout<<"";
-}
-
-double Utility::utility(int (*gameState)[10], int x, int y)
+double utility(int gameState[][10], int x, int y)
 {
     string patternComputer[] = {"XXXXX", "XXXX-", "XX-XX", "XXX-X", "-XXX-", "XXX--", "-XX-X", //7
-            "XX-X-", "--XX-", "-XX--", "XX---", "XX--X", "X-X--", "X---X",  "X--X-", "-X-X-",
-             "X-X-X", "--X--", "-X---", "X----"}; //14
+			"XX-X-", "--XX-", "-XX--", "XX---", "XX--X", "X-X--", "X---X",  "X--X-", "-X-X-",
+			 "X-X-X", "--X--", "-X---", "X----"}; //14
 
     string patternMan[] = {"OOOOO", "OOOO-", "OO-OO", "OOO-O", "-OOO-", "OOO--", "-OO-O", //7
-            "OO-OO-", "--OO-", "-OO--", "OO---", "OO--O", "O-O--", "O---O", "O--O-",
-             "-O-O-", "O-O-O", "--O--", "-O---", "O----"};
+			"OO-OO-", "--OO-", "-OO--", "OO---", "OO--O", "O-O--", "O---O", "O--O-",
+			 "-O-O-", "O-O-O", "--O--", "-O---", "O----"};
 
 
     double profit[] = {200000000.0, 500000.0, 30000.0, 30000.0, 10000.0, 900.0, 450.0, 450.0, 300.0, 200.0,
@@ -68,17 +62,21 @@ double Utility::utility(int (*gameState)[10], int x, int y)
                 }
 
             }
+            //cout<<sr<<endl;
+            cout<<sl<<endl;
 
             int k = 1;
             string sr2 = sr;
             reverse(sr2.begin(), sr2.end());
+            cout<<sr<<endl;
+            cout<<sr2<<endl;
 
             for(int i=0; i<20; i++)
                 {
                     if(sr == patternMan[i] || sr2 == patternMan[i])
                     {
                         pcProfit += mult * profit[i];
-                        //cout<<profit[i]<<endl;
+                        cout<<profit[i]<<endl;
                         k = 0;
                         break;
 
@@ -95,7 +93,7 @@ double Utility::utility(int (*gameState)[10], int x, int y)
                     if(sr == patternComputer[i] || sr3 == patternComputer[i])
                     {
                         pcProfit += mult * profit[i];
-                        //cout<<profit[i]<<endl;
+                        cout<<profit[i]<<endl;
                         //k = 0;
                         break;
 
@@ -107,13 +105,15 @@ double Utility::utility(int (*gameState)[10], int x, int y)
             int k2 = 1;
             string sl2 = sl;
             reverse(sl2.begin(), sl2.end());
+            cout<<sl<<endl;
+            cout<<sl2<<endl;
 
             for(int i=0; i<20; i++)
                 {
                     if(sl == patternMan[i] || sl2 == patternMan[i])
                     {
                         pcProfit += mult * profit[i];
-                        //cout<<profit[i]<<endl;
+                        cout<<profit[i]<<endl;
                         k2 = 0;
                         break;
 
@@ -130,7 +130,7 @@ double Utility::utility(int (*gameState)[10], int x, int y)
                     if(sl == patternComputer[i] || sl3 == patternComputer[i])
                     {
                         pcProfit += mult * profit[i];
-                        //cout<<profit[i]<<endl;
+                        cout<<profit[i]<<endl;
                         //k = 0;
                         break;
 
@@ -457,19 +457,51 @@ double Utility::utility(int (*gameState)[10], int x, int y)
 
 
 
-//int main()
-//{
-//    string s[] = {"X", "X", "X","X", "X", "X"};
-//    s[2] = "O";
-//    cout<<s[2]<<endl;
-//    string sr= "123456";
-//    string sr2 = sr;
-//    reverse(sr2.begin(), sr2.end());
-//    cout<<sr2<<endl;
-//    sr[2]='#';
-//    cout<<sr<<endl;
-//    string st = "awer";
-//    st+= "zz";
-//    cout<<st<<endl;
+int main()
+{
+    int state[10][10] = {
+//   0 1 2 3 4 5 6 7 8 9
+    {0,0,0,0,0,0,0,0,-1,0},//0
+    {0,0,0,0,0,0,0,1,0,0},//1
+    {0,0,0,0,0,0,1,0,0,0},//2
+    {0,0,0,0,0,1,1,0,0,0},//3
+    {0,0,0,0,1,0,1,0,0,0},//4
+    {0,0,0,-1,0,-1,0,0,0,0},//5
+    {0,0,0,0,-1,0,0,0,0,0},//6
+    {0,0,0,0,0,-1,0,0,0,0},//7
+    {0,0,0,0,0,0,0,0,0,0},//8
+    {0,0,0,0,0,0,0,0,0,0}//9
+    };
 
-//}
+    //double value = utility(state, 5, 4); //1.74433e-006
+    //double value = utility(state, 5, 7); //2.64753e-006
+    //double value = utility(state, 6, 4); //4.36773e-006
+    //double value = utility(state, 4, 6); //3.55417e-006
+    //double value = utility(state, 5, 3); //4.37807e-007
+    //double value = utility(state, 4, 5); //3.69895e-006
+
+    //double value = utility(state, 6, 3); //-1.44787e-007
+    //double value = utility(state, 6, 6); //-1.79604e-006
+    //double value = utility(state, 6, 2); //-1.62368e-006
+    //double value = utility(state, 2, 4); //-1.69952e-006
+    //double value = utility(state, 3, 5); //-2.86815e-006
+
+    //double value = utility(state, 7, 5); //3.21633e-006
+    //double value = utility(state, 4, 2); //3.19909e-006
+    //double value = utility(state, 5, 2); //2.34416e-007
+    //double value = utility(state, 6, 5); //1.82017e-006
+
+    //double value = utility(state, 5, 3); //3.67827e-006
+    //double value = utility(state, 8, 7); //3.67827e-006//105
+    //double value = utility(state, 3, 3); //2.65442e-007
+    //double value = utility(state, 6, 3); //9.54902e-007
+    //double value = utility(state, 6, 5); //1.82017e-006
+    //double value = utility(state, 4, 5); //2.14422e-006
+    //double value = utility(state, 4, 6); //13235 //690
+    //double value = utility(state, 8, 7); //0 600
+    //double value = utility(state, 4, 6); //820
+    //double value = utility(state, 8, 6); //600 //10900
+    double value = utility(state, 4, 6); //1450
+    cout<<value<<endl; //-0.000174065 //-5.01582e-006
+
+}
