@@ -1,2 +1,2 @@
 # Gomoku
-Gomoku game for AI course
+10*10 board game for AI course
